@@ -57,37 +57,84 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Modules will be mounted here as each phase is completed
-// Section 4.1 Mount Map:
-// Specific admin routes first
-router.use('/admin/user-management', require('./modules/user-management'));
-router.use('/admin/subadmin-management', require('./modules/subadmin-management'));
-router.use('/admin/inventory', require('./modules/inventory').adminRouter);
-router.use('/admin/notifications', require('./modules/notifications').adminRouter);
-router.use('/admin/faq', require('./modules/faq').adminRouter);
-router.use('/admin/settings', require('./modules/settings').adminRouter);
-router.use('/admin/help', require('./modules/help').adminRouter);
+// ==========================================
+// DIRECT ROUTE MOUNTS (No index.js facades)
+// ==========================================
 
-// Account routes
-router.use('/user', require('./modules/user'));
-router.use('/admin', require('./modules/admin'));
-router.use('/subadmin', require('./modules/subadmin'));
+// 1. User Management
+router.use('/admin/user-management', require('./modules/user-management/routes/userManagement.routes'));
 
-// Generic admin mounts for orders, wallets, transactions
-router.use('/admin', require('./modules/orders').adminRouter);
-router.use('/admin', require('./modules/wallet').adminRouter);
-router.use('/admin', require('./modules/transactions').adminRouter);
+// 2. Subadmin Management
+router.use('/admin/subadmin-management/subadmins', require('./modules/subadmin-management/subadmins/routes/subadmins.routes'));
+router.use('/admin/subadmin-management/roles', require('./modules/subadmin-management/roles/routes/roles.routes'));
+router.use('/admin/subadmin-management/permissions', require('./modules/subadmin-management/permissions/routes/permissions.routes'));
 
-// Customer-facing mounts
-router.use('/catalog', require('./modules/inventory').userRouter);
-router.use('/notifications', require('./modules/notifications').userRouter);
-router.use('/faq', require('./modules/faq').userRouter);
-router.use('/settings/public', require('./modules/settings').publicRouter);
-router.use('/help', require('./modules/help').userRouter);
+// 3. Inventory (Admin)
+router.use('/admin/inventory/categories', require('./modules/inventory/categories/routes/admin.routes'));
+router.use('/admin/inventory/products', require('./modules/inventory/products/routes/admin.routes'));
+router.use('/admin/inventory/stock', require('./modules/inventory/stock/routes/admin.routes'));
 
-// User-facing root mounts: cart, coupons, orders, wallet, transactions, invoices
-router.use('/', require('./modules/orders').userRouter);
-router.use('/', require('./modules/wallet').userRouter);
-router.use('/', require('./modules/transactions').userRouter);
+// 4. Notifications (Admin)
+router.use('/admin/notifications', require('./modules/notifications/routes/admin.routes'));
+
+// 5. FAQ (Admin)
+router.use('/admin/faq/categories', require('./modules/faq/categories/routes/admin.routes'));
+router.use('/admin/faq', require('./modules/faq/faqs/routes/admin.routes'));
+
+// 6. Settings (Admin & Public)
+router.use('/admin/settings', require('./modules/settings/routes/admin.routes'));
+router.use('/settings/public', require('./modules/settings/routes/public.routes'));
+
+// 7. Help Tickets (Admin)
+router.use('/admin/help', require('./modules/help/routes/admin.routes'));
+
+// 8. Admin Self (Auth, Profile, Audit Logs)
+router.use('/admin/auth', require('./modules/admin/auth/routes/session.routes'));
+router.use('/admin/auth', require('./modules/admin/auth/routes/password.routes'));
+router.use('/admin/auth/2fa', require('./modules/admin/auth/routes/twoFactor.routes'));
+router.use('/admin/profile', require('./modules/admin/profile/routes/profile.routes'));
+router.use('/admin/audit-logs', require('./modules/admin/audit-logs/routes/auditLogs.routes'));
+
+// 9. Subadmin Self (Auth, Profile)
+router.use('/subadmin/auth', require('./modules/subadmin/auth/routes/session.routes'));
+router.use('/subadmin/auth', require('./modules/subadmin/auth/routes/password.routes'));
+router.use('/subadmin/auth/2fa', require('./modules/subadmin/auth/routes/twoFactor.routes'));
+router.use('/subadmin/profile', require('./modules/subadmin/profile/routes/profile.routes'));
+
+// 10. Orders & Coupons (Admin)
+router.use('/admin', require('./modules/orders/coupons/routes/admin.routes'));
+router.use('/admin', require('./modules/orders/orders/routes/admin.routes'));
+
+// 11. Wallets (Admin)
+router.use('/admin', require('./modules/wallet/routes/admin.routes'));
+
+// 12. Transactions, Invoices & Reports (Admin)
+router.use('/admin', require('./modules/transactions/transactions/routes/admin.routes'));
+router.use('/admin', require('./modules/transactions/invoices/routes/admin.routes'));
+router.use('/admin', require('./modules/transactions/reports/routes/admin.routes'));
+
+// 13. User Self (Auth, Profile, Addresses)
+router.use('/user/auth', require('./modules/user/auth/routes/registration.routes'));
+router.use('/user/auth', require('./modules/user/auth/routes/session.routes'));
+router.use('/user/auth', require('./modules/user/auth/routes/password.routes'));
+router.use('/user/auth', require('./modules/user/auth/routes/verification.routes'));
+router.use('/user/profile', require('./modules/user/profile/routes/profile.routes'));
+router.use('/user/profile/addresses', require('./modules/user/addresses/routes/addresses.routes'));
+router.use('/user/addresses', require('./modules/user/addresses/routes/addresses.routes'));
+
+// 14. Customer-facing Catalog, Notifications, FAQ, Help
+router.use('/catalog/categories', require('./modules/inventory/categories/routes/user.routes'));
+router.use('/catalog/products', require('./modules/inventory/products/routes/user.routes'));
+router.use('/notifications', require('./modules/notifications/routes/user.routes'));
+router.use('/faq', require('./modules/faq/faqs/routes/user.routes'));
+router.use('/help', require('./modules/help/routes/user.routes'));
+
+// 15. User Root Commerce (Cart, Coupons, Orders, Wallet, Transactions, Invoices)
+router.use('/', require('./modules/orders/cart/routes/user.routes'));
+router.use('/', require('./modules/orders/coupons/routes/user.routes'));
+router.use('/', require('./modules/orders/orders/routes/user.routes'));
+router.use('/', require('./modules/wallet/routes/user.routes'));
+router.use('/', require('./modules/transactions/transactions/routes/user.routes'));
+router.use('/', require('./modules/transactions/invoices/routes/user.routes'));
 
 module.exports = router;
